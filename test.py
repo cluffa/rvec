@@ -46,96 +46,41 @@ print("x % y: {}".format(x % y))
 # print("testing **")
 
 # benchmarking
+print("\nbenchmarking")
 x_list = [x for x in range(1, 10000000)]
 y_list = [x for x in range(1, 10000000)]
 
 x_tuple = tuple(x_list)
 y_tuple = tuple(y_list)
 
+from array import array
+
+x_array = array('i', x_list)
+y_array = array('i', y_list)
+
 x = c(x_list)
 y = c(y_list)
 
 # time x + y
 start = time.time()
-x + y
+x + y / c(2)
 end = time.time()
 print("x + y: {}".format(end - start))
 
 # time x_list + y_list
 start = time.time()
-map(add, x_list, y_list)
+list(map(add, x_list, y_list))
 end = time.time()
 print("x_list + y_list: {}".format(end - start))
 
 # time x_tuple + y_tuple
 start = time.time()
-map(add, x_tuple, y_tuple)
+tuple(map(add, x_tuple, y_tuple))
 end = time.time()
 print("x_tuple + y_tuple: {}".format(end - start))
 
-
-# time x - y
+# time x_array + y_array
 start = time.time()
-x - y
+array('i', map(add, x_array, y_array))
 end = time.time()
-print("x - y: {}".format(end - start))
-
-# time x_list - y_list
-start = time.time()
-map(sub, x_list, y_list)
-end = time.time()
-print("x_list - y_list: {}".format(end - start))
-
-# time x_tuple - y_tuple
-start = time.time()
-map(sub, x_tuple, y_tuple)
-end = time.time()
-print("x_tuple - y_tuple: {}".format(end - start))
-
-# time x * y
-start = time.time()
-x * y
-end = time.time()
-print("x * y: {}".format(end - start))
-
-# time x_list * y_list
-start = time.time()
-map(mul, x_list, y_list)
-end = time.time()
-print("x_list * y_list: {}".format(end - start))
-
-# time x_tuple * y_tuple
-start = time.time()
-map(mul, x_tuple, y_tuple)
-end = time.time()
-print("x_tuple * y_tuple: {}".format(end - start))
-
-# time x / y
-start = time.time()
-x / y
-end = time.time()
-print("x / y: {}".format(end - start))
-
-# time x_list / y_list
-start = time.time()
-map(truediv, x_list, y_list)
-end = time.time()
-print("x_list / y_list: {}".format(end - start))
-
-# time x_tuple / y_tuple
-start = time.time()
-map(truediv, x_tuple, y_tuple)
-end = time.time()
-print("x_tuple / y_tuple: {}".format(end - start))
-
-# time x // y
-start = time.time()
-x // y
-end = time.time()
-print("x // y: {}".format(end - start))
-
-# time x_list // y_list
-start = time.time()
-map(floordiv, x_list, y_list)
-end = time.time()
-print("x_list // y_list: {}".format(end - start))
+print("x_array + y_array: {}".format(end - start))

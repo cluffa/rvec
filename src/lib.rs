@@ -1,210 +1,117 @@
+use std::ops::Add;
+
 use pyo3::prelude::*;
 
-#[pyclass]
-#[derive(Debug, Clone)]
-pub struct RInt(pub Vec<i64>);
+#[derive(Debug, Clone, Copy)]
+enum RVT {
+    Int,
+    Float,
+    String,
+    Bool,
+}
 
 #[pyclass]
 #[derive(Debug, Clone)]
-pub struct RFloat(pub Vec<f64>);
+pub struct RVec {
+    rt: RVT,
+    ri: Option<Vec<i64>>,
+    rf: Option<Vec<f64>>,
+    rs: Option<Vec<String>>,
+    rb: Option<Vec<bool>>,
+}
 
-#[pyclass]
-#[derive(Debug, Clone)]
-pub struct RString(pub Vec<String>);
+#[pyfunction]
+pub fn RInt_new() -> RVec {
+    RVec {
+        rt: RVT::Int,
+        ri: Some(Vec::new()),
+        rf: None,
+        rs: None,
+        rb: None,
+    }
+}
 
-#[pyclass]
-#[derive(Debug, Clone)]
-pub struct RBool(pub Vec<bool>);
+#[pyfunction]
+pub fn RFloat_new() -> RVec {
+    RVec {
+        rt: RVT::Float,
+        ri: None,
+        rf: Some(Vec::new()),
+        rs: None,
+        rb: None,
+    }
+}
 
+#[pyfunction]
+pub fn RString_new() -> RVec {
+    RVec {
+        rt: RVT::String,
+        ri: None,
+        rf: None,
+        rs: Some(Vec::new()),
+        rb: None,
+    }
+}
+
+#[pyfunction]
+pub fn RBool_new() -> RVec {
+    RVec {
+        rt: RVT::Bool,
+        ri: None,
+        rf: None,
+        rs: None,
+        rb: Some(Vec::new()),
+    }
+}
 
 #[pymethods]
-impl RInt {
-    #[staticmethod]
-    pub fn new() -> Self {
-        RInt(Vec::new())
-    }
-    
-    // generic push that can take i64 or RInt, or Vec<i64> and python equivalents
-    pub fn push(&mut self, x: &PyAny) -> PyResult<()> {
-        if let Ok(x) = x.extract::<i64>() {
-            self.0.push(x);
-        } else if let Ok(x) = x.extract::<RInt>() {
-            self.0.extend(x.0.clone());
-        } else if let Ok(x) = x.extract::<Vec<i64>>() {
-            self.0.extend(x);
-        } else {
-            return Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>("Invalid type"));
-        }
-        Ok(())
-    }
-
-    pub fn __str__(&self) -> String {
-        format!("{:?}", self.0)
-    }
-
-    pub fn __repr__(&self) -> String {
-        format!("{:?}", self.0)
-    }
-
-    pub fn __len__(&self) -> usize {
-        self.0.len()
-    }
-    
-    // indexing, can take i64 or usize, or python equivalents
-    pub fn __getitem__(&self, idx: usize) -> PyResult<i64> {
-        Ok(self.0[idx])
-    }
-
-    pub fn __setitem__(&mut self, idx: usize, val: i64) {
-        self.0[idx] = val;
-    }
-
-    // element-wise operations work with RInt of same length or RInt of length 1
-    pub fn __add__(&self, other: &RInt) -> PyResult<RInt> {
-        if self.0.len() == other.0.len() {
-            Ok(RInt(self.0.iter().zip(other.0.iter()).map(|(a, b)| a + b).collect()))
-        } else if other.0.len() == 1 {
-            Ok(RInt(self.0.iter().map(|a| a + other.0[0]).collect()))
-        } else {
-            Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>("Invalid type"))
+impl RVec {
+    pub fn len(&self) -> usize {
+        match self.rt {
+            RVT::Int => self.ri.as_ref().unwrap().len(),
+            RVT::Float => self.rf.as_ref().unwrap().len(),
+            RVT::String => self.rs.as_ref().unwrap().len(),
+            RVT::Bool => self.rb.as_ref().unwrap().len(),
         }
     }
+}
 
-    pub fn __sub__(&self, other: &RInt) -> PyResult<RInt> {
-        if self.0.len() == other.0.len() {
-            Ok(RInt(self.0.iter().zip(other.0.iter()).map(|(a, b)| a - b).collect()))
-        } else if other.0.len() == 1 {
-            Ok(RInt(self.0.iter().map(|a| a - other.0[0]).collect()))
-        } else {
-            Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>("Invalid type"))
-        }
+impl Add<i64> for RVec {
+    type Output = Self;
+
+    fn add(self, rhs: i64) -> Self::Output {
+        let v = match self.rt {
+            RVT::Int => self.ri.as_ref().unwrap().iter().map(|x| x + rhs).collect(),
+            RVT::Float => self.rf.as_ref().unwrap().iter().map(|x| x + rhs as f64).collect(),
+            RVT::String => self.rs.as_ref().unwrap().iter().map(|x| x + &rhs.to_string()).collect(),
+            RVT::Bool => self.rb.as_ref().unwrap().iter().map(|x| x || rhs != 0).collect(),
+        };
+
+        
+
     }
+}
 
-    pub fn __mul__(&self, other: &RInt) -> PyResult<RInt> {
-        if self.0.len() == other.0.len() {
-            Ok(RInt(self.0.iter().zip(other.0.iter()).map(|(a, b)| a * b).collect()))
-        } else if other.0.len() == 1 {
-            Ok(RInt(self.0.iter().map(|a| a * other.0[0]).collect()))
-        } else {
-            Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>("Invalid type"))
-        }
-    }
+impl Add<RVec> for RVec {
+    type Output = Self;
 
-    pub fn __truediv__(&self, other: &RInt) -> PyResult<RFloat> {
-        if self.0.len() == other.0.len() {
-            Ok(RFloat(self.0.iter().zip(other.0.iter()).map(|(a, b)| *a as f64 / *b as f64).collect()))
-        } else if other.0.len() == 1 {
-            Ok(RFloat(self.0.iter().map(|a| *a as f64 / other.0[0] as f64).collect()))
-        } else {
-            Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>("Invalid type"))
-        }
-    }
+    fn add(self, rhs: RVec) -> Self::Output {
+        // will cast to each element type, if one or the other is a scalar
+        // set out as length of non-scalar or self if both are scalars or same length
 
-    pub fn __floordiv__(&self, other: &RInt) -> PyResult<RInt> {
-        if self.0.len() == other.0.len() {
-            Ok(RInt(self.0.iter().zip(other.0.iter()).map(|(a, b)| a / b).collect()))
-        } else if other.0.len() == 1 {
-            Ok(RInt(self.0.iter().map(|a| a / other.0[0]).collect()))
-        } else {
-            Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>("Invalid type"))
-        }
-    }
+        // 
+        let self_is_scalar = self.len() == 1;
+        let rhs_is_scalar = rhs.len() == 1;
 
-    pub fn __mod__(&self, other: &RInt) -> PyResult<RInt> {
-        if self.0.len() == other.0.len() {
-            Ok(RInt(self.0.iter().zip(other.0.iter()).map(|(a, b)| a % b).collect()))
-        } else if other.0.len() == 1 {
-            Ok(RInt(self.0.iter().map(|a| a % other.0[0]).collect()))
-        } else {
-            Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>("Invalid type"))
-        }
-    }
 
-    // pub fn __pow__(&self, other: &RInt) -> PyResult<RInt> {
-    //     if self.0.len() == other.0.len() {
-    //         Ok(RInt(self.0.iter().zip(other.0.iter()).map(|(a, b)| a.pow(*b as u32)).collect()))
-    //     } else if other.0.len() == 1 {
-    //         Ok(RInt(self.0.iter().map(|a| a.pow(other.0[0] as u32)).collect()))
-    //     } else {
-    //         Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>("Invalid type"))
-    //     }
-    // }
+        match (self.rt, rhs.rt) {
+            // out is a copy of longer vector, s 
+            let out = if ()
 
-    pub fn __neg__(&self) -> RInt {
-        RInt(self.0.iter().map(|a| -a).collect())
-    }
-
-    pub fn __pos__(&self) -> RInt {
-        RInt(self.0.clone())
-    }
-
-    pub fn __abs__(&self) -> RInt {
-        RInt(self.0.iter().map(|a| a.abs()).collect())
-    }
-
-    pub fn __invert__(&self) -> RInt {
-        RInt(self.0.iter().map(|a| !a).collect())
-    }
-
-    pub fn __lshift__(&self, other: &RInt) -> PyResult<RInt> {
-        if self.0.len() == other.0.len() {
-            Ok(RInt(self.0.iter().zip(other.0.iter()).map(|(a, b)| a << b).collect()))
-        } else if other.0.len() == 1 {
-            Ok(RInt(self.0.iter().map(|a| a << other.0[0]).collect()))
-        } else {
-            Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>("Invalid type"))
-        }
-    }
-
-    pub fn __rshift__(&self, other: &RInt) -> PyResult<RInt> {
-        if self.0.len() == other.0.len() {
-            Ok(RInt(self.0.iter().zip(other.0.iter()).map(|(a, b)| a >> b).collect()))
-        } else if other.0.len() == 1 {
-            Ok(RInt(self.0.iter().map(|a| a >> other.0[0]).collect()))
-        } else {
-            Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>("Invalid type"))
-        }
-    }
-
-    pub fn __and__(&self, other: &RInt) -> PyResult<RInt> {
-        if self.0.len() == other.0.len() {
-            Ok(RInt(self.0.iter().zip(other.0.iter()).map(|(a, b)| a & b).collect()))
-        } else if other.0.len() == 1 {
-            Ok(RInt(self.0.iter().map(|a| a & other.0[0]).collect()))
-        } else {
-            Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>("Invalid type"))
-        }
-    }
-
-    pub fn __xor__(&self, other: &RInt) -> PyResult<RInt> {
-        if self.0.len() == other.0.len() {
-            Ok(RInt(self.0.iter().zip(other.0.iter()).map(|(a, b)| a ^ b).collect()))
-        } else if other.0.len() == 1 {
-            Ok(RInt(self.0.iter().map(|a| a ^ other.0[0]).collect()))
-        } else {
-            Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>("Invalid type"))
-        }
-    }
-
-    pub fn __or__(&self, other: &RInt) -> PyResult<RInt> {
-        if self.0.len() == other.0.len() {
-            Ok(RInt(self.0.iter().zip(other.0.iter()).map(|(a, b)| a | b).collect()))
-        } else if other.0.len() == 1 {
-            Ok(RInt(self.0.iter().map(|a| a | other.0[0]).collect()))
-        } else {
-            Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>("Invalid type"))
-        }
-    }
-
-    pub fn __bool__(&self) -> bool {
-        self.0.iter().any(|a| *a != 0)
-    }
-
-    pub fn __float__(&self) -> PyResult<RFloat> {
-        if self.0.len() == 1 {
-            Ok(RFloat(vec![self.0[0] as f64]))
-        } else {
-            Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>("Invalid type"))
+            (RVT::Int, RVT::Int) => {
+                
+            }
+            _ => panic!("Invalid type"),
         }
     }
 }
@@ -213,10 +120,11 @@ impl RInt {
 /// A Python module implemented in Rust.
 #[pymodule]
 fn rvec(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_class::<RInt>()?;
-    m.add_class::<RFloat>()?;
-    m.add_class::<RBool>()?;
-    m.add_class::<RString>()?;
+    m.add_wrapped(wrap_pyfunction!(RInt_new))?;
+    m.add_wrapped(wrap_pyfunction!(RFloat_new))?;
+    m.add_wrapped(wrap_pyfunction!(RString_new))?;
+    m.add_wrapped(wrap_pyfunction!(RBool_new))?;
+    m.add_class::<RVec>()?;
     
     Ok(())
 }
