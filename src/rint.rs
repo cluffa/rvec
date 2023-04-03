@@ -4,19 +4,6 @@ use pyo3::prelude::*;
 #[derive(Debug, Clone)]
 pub struct RInt(pub Vec<i64>);
 
-#[pyclass]
-#[derive(Debug, Clone)]
-pub struct RFloat(pub Vec<f64>);
-
-#[pyclass]
-#[derive(Debug, Clone)]
-pub struct RString(pub Vec<String>);
-
-#[pyclass]
-#[derive(Debug, Clone)]
-pub struct RBool(pub Vec<bool>);
-
-
 #[pymethods]
 impl RInt {
     #[staticmethod]
@@ -207,16 +194,4 @@ impl RInt {
             Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>("Invalid type"))
         }
     }
-}
-
-
-/// A Python module implemented in Rust.
-#[pymodule]
-fn rvec(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_class::<RInt>()?;
-    m.add_class::<RFloat>()?;
-    m.add_class::<RBool>()?;
-    m.add_class::<RString>()?;
-    
-    Ok(())
 }
