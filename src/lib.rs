@@ -46,26 +46,82 @@ impl RVec {
         self.__str__()
     }
 
-    pub fn __add__(&self, other: &RVec) -> PyResult<RVec> {
-        Ok(self.clone() + other.clone())
-    }
-    
-    pub fn __sub__(&self, other: &RVec) -> PyResult<RVec> {
-        Ok(self.clone() - other.clone())
+    pub fn __add__(&self, other: &PyAny) -> PyResult<RVec> {
+        if let Ok(other) = other.extract::<RVec>() {
+            Ok(self.clone() + other)
+        } else if let Ok(other) = other.extract::<i64>() {
+            Ok(self.clone() + other)
+        } else if let Ok(other) = other.extract::<f64>() {
+            Ok(self.clone() + other)
+        } else if let Ok(other) = other.extract::<String>() {
+            Ok(self.clone() + other)
+        } else if let Ok(other) = other.extract::<bool>() {
+            Ok(self.clone() + other)
+        } else {
+            panic!("Unsupported type");
+        }
     }
 
-    pub fn __mul__(&self, other: &RVec) -> PyResult<RVec> {
-        Ok(self.clone() * other.clone())
+    pub fn __sub__(&self, other: &PyAny) -> PyResult<RVec> {
+        if let Ok(other) = other.extract::<RVec>() {
+            Ok(self.clone() - other)
+        } else if let Ok(other) = other.extract::<i64>() {
+            Ok(self.clone() - other)
+        } else if let Ok(other) = other.extract::<f64>() {
+            Ok(self.clone() - other)
+        } else if let Ok(other) = other.extract::<String>() {
+            panic!("Unsupported type");
+        } else if let Ok(other) = other.extract::<bool>() {
+            panic!("Unsupported type");
+        } else {
+            panic!("Unsupported type");
+        }
     }
 
-    pub fn __truediv__(&self, other: &RVec) -> PyResult<RVec> {
-        Ok(self.clone() / other.clone())
+    pub fn __mul__(&self, other: &PyAny) -> PyResult<RVec> {
+        if let Ok(other) = other.extract::<RVec>() {
+            Ok(self.clone() * other)
+        } else if let Ok(other) = other.extract::<i64>() {
+            Ok(self.clone() * other)
+        } else if let Ok(other) = other.extract::<f64>() {
+            Ok(self.clone() * other)
+        } else if let Ok(other) = other.extract::<String>() {
+            panic!("Unsupported type");
+        } else if let Ok(other) = other.extract::<bool>() {
+            panic!("Unsupported type");
+        } else {
+            panic!("Unsupported type");
+        }
+    }
+
+    pub fn __truediv__(&self, other: &PyAny) -> PyResult<RVec> {
+        if let Ok(other) = other.extract::<RVec>() {
+            Ok(self.clone() / other)
+        } else if let Ok(other) = other.extract::<i64>() {
+            Ok(self.clone() / other)
+        } else if let Ok(other) = other.extract::<f64>() {
+            Ok(self.clone() / other)
+        } else if let Ok(other) = other.extract::<String>() {
+            panic!("Unsupported type");
+        } else if let Ok(other) = other.extract::<bool>() {
+            panic!("Unsupported type");
+        } else {
+            panic!("Unsupported type");
+        }
+    }
+
+    pub fn __neg__(&self) -> PyResult<RVec> {
+        Ok(-self.clone())
     }
 }
 
 #[pyfunction]
 pub fn new(x: &PyList) -> PyResult<RVec> {
     // get type of first element
+    if x.len() == 0 {
+        panic!("Empty list, cannot determine type");
+    }
+
     let py_type = x.get_item(0).unwrap().get_type().name().unwrap();
     let rvt = match py_type {
         "int" => RVT::Int,
@@ -612,6 +668,38 @@ impl Add<String> for RVec {
         }
     }
 }
+
+impl Add<bool> for RVec {
+    type Output = RVec;
+
+    // treat as int
+    fn add(self, other: bool) -> RVec {
+        match self.rt {
+            RVT::Int => {
+                let ri = self.ri.unwrap().add_scalar(other as i64);
+                RVec {
+                    rt: RVT::Int,
+                    ri: Some(ri),
+                    rf: None,
+                    rs: None,
+                    rb: None,
+                }
+            },
+            RVT::Bool => {
+                let ri = self.rb.unwrap().map(|x| x as i64).add_scalar(other as i64);
+                RVec {
+                    rt: RVT::Int,
+                    ri: Some(ri),
+                    rf: None,
+                    rs: None,
+                    rb: None,
+                }
+            },
+            _ => panic!("Unsupported type"),
+        }
+    }
+}
+
 
 impl Neg for RVec {
     type Output = RVec;

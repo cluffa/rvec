@@ -5,9 +5,12 @@ print("running rvec/__init__.py")
 
 def c(*args):
     out = []
+    rvecs = []
     for arg in args:
         if isinstance(arg, list) or isinstance(arg, tuple):
             out += arg
+        elif isinstance(arg, rvec.RVec):
+            rvecs.append(arg)
         else:
             out.append(arg)
 
