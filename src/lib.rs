@@ -22,6 +22,12 @@ pub struct RVec {
     pub rb: Option<DVector<bool>>,
 }
 
+#[pyclass]
+#[derive(Debug, Clone)]
+pub struct RStr {
+    pub s: DVector<String>
+}
+
 #[pymethods]
 impl RVec {
     pub fn __len__(&self) -> PyResult<usize> {
@@ -113,6 +119,28 @@ impl RVec {
     pub fn __neg__(&self) -> PyResult<RVec> {
         Ok(-self.clone())
     }
+
+    pub fn str(&self) -> PyResult<RStr> {
+        Ok(RStr {
+            s: self.rs.as_ref().unwrap().clone()
+        })
+    }
+}
+
+impl RStr {
+    pub fn __str__(&self) -> PyResult<String> {
+        Ok(format!("{:?}", self.s))
+    }
+
+    pub fn __repr__(&self) -> PyResult<String> {
+        self.__str__()
+    }
+
+    pub fn __len__(&self) -> PyResult<usize> {
+        Ok(self.s.len())
+    }
+
+    // todo: implement other methods from python strings
 }
 
 #[pyfunction]
