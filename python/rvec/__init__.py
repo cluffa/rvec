@@ -1,28 +1,17 @@
 from .rvec import *
+from rvec import new
 
 print("running rvec/__init__.py")
 
 def c(*args):
-    if isinstance(args[0], list) or isinstance(args[0], tuple):
-        first = args[0][0]
-    else:
-        first = args[0]
-
-    if isinstance(first, int):
-        out = rvec.RInt.new()
-    elif isinstance(first, float):
-        out = rvec.RFloat.new()
-    elif isinstance(first, bool):
-        out = rvec.RBool.new()
-    elif isinstance(first, str):
-        out = rvec.RString.new()
-    else:
-        raise TypeError("Unsupported type: {}".format(type(first)))
-
+    out = []
     for arg in args:
-        out.push(arg)
+        if isinstance(arg, list) or isinstance(arg, tuple):
+            out += arg
+        else:
+            out.append(arg)
 
-    return out
+    return new(out)
 
 __doc__ = rvec.__doc__
 if hasattr(rvec, "__all__"):

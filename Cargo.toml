@@ -9,4 +9,5 @@ name = "rvec"
 crate-type = ["cdylib"]
 
 [dependencies]
+nalgebra = "0.32.2"
 pyo3 = "0.18.1"
