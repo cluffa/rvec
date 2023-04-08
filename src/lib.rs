@@ -1,7 +1,7 @@
 use pyo3::prelude::*;
 
 mod rvecdata;
-use rvecdata::{RVecData, from_py, BaseRVecData};
+use rvecdata::{RVecData, from_py, BaseRVecData, VecStringMethods};
 
 #[pyclass]
 #[derive(Clone, Debug)]
@@ -14,6 +14,11 @@ impl RVec {
     #[new]
     pub fn new(data: &PyAny) -> PyResult<Self> {
         Ok(RVec { data: from_py(data)? })
+    }
+
+    #[pyo3(text_signature = "($self, /)")]
+    pub fn str(&self) -> PyResult<Self> {
+        Ok(RVec { data: self.data.as_str() })
     }
 
     pub fn __repr__(&self) -> PyResult<String> {
@@ -95,13 +100,65 @@ impl RVec {
     pub fn __neg__(&self) -> PyResult<Self> {
         Ok(RVec { data: -self.data.clone() })
     }
-
+    
     pub fn __getitem__(&self, index: &PyAny) -> PyResult<f64> {
-        panic!("Not implemented")
+        panic!("Not implemented") // TODO
     }
 
     pub fn __setitem__(&mut self, index: &PyAny, value: &PyAny) -> PyResult<()> {
-        panic!("Not implemented")
+        panic!("Not implemented") // TODO
+    }
+
+    pub fn str_capitalize(&self) -> PyResult<Self> {
+        Ok(RVec { data: self.data.as_str().capitalize() })
+    }
+
+    pub fn str_center(&self, width: usize, fill_char: char) -> PyResult<Self> {
+        Ok(RVec { data: self.data.as_str().center(width, fill_char) })
+    }
+
+    pub fn str_count(&self, sub: &str) -> PyResult<Self> {
+        Ok(RVec { data: self.data.as_str().count(sub) })
+    }
+
+    pub fn str_endswith(&self, suffix: &str) -> PyResult<Self> {
+        Ok(RVec { data: self.data.as_str().endswith(suffix) })
+    }
+
+    pub fn str_startswith(&self, prefix: &str) -> PyResult<Self> {
+        Ok(RVec { data: self.data.as_str().startswith(prefix) })
+    }
+
+    pub fn str_find(&self, sub: &str) -> PyResult<Self> {
+        Ok(RVec { data: self.data.as_str().find(sub) })
+    }
+
+    pub fn str_lower(&self) -> PyResult<Self> {
+        Ok(RVec { data: self.data.as_str().lower() })
+    }
+
+    pub fn str_upper(&self) -> PyResult<Self> {
+        Ok(RVec { data: self.data.as_str().upper() })
+    }
+
+    pub fn str_replace(&self, old: &str, new: &str) -> PyResult<Self> {
+        Ok(RVec { data: self.data.as_str().replace(old, new) })
+    }
+
+    pub fn str_split(&self, sep: &str) -> PyResult<Self> {
+        Ok(RVec { data: self.data.as_str().split(sep) })
+    }
+
+    pub fn str_strip(&self) -> PyResult<Self> {
+        Ok(RVec { data: self.data.as_str().strip() })
+    }
+
+    pub fn str_lstrip(&self) -> PyResult<Self> {
+        Ok(RVec { data: self.data.as_str().lstrip() })
+    }
+
+    pub fn str_rstrip(&self) -> PyResult<Self> {
+        Ok(RVec { data: self.data.as_str().rstrip() })
     }
 }
 
