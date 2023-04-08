@@ -7,7 +7,7 @@ The main goal of this library is to provide a simple way to perform vectorized o
 
 For now, not all types support full cross-type operations. I will get around to adding support for all types eventually. I will probably create a python wrapper for the classes to take advantage of python's lack of type checking, and combine the classes into a single class.  
 
-## Usage
+## Usage  (may not be up to date)
 ```python
 # The main types
 from rvec import FloatVec, IntVec, BoolVec, StrVec

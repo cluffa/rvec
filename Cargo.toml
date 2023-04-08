@@ -9,5 +9,6 @@ name = "rvec"
 crate-type = ["cdylib"]
 
 [dependencies]
+num-traits = "0.2.15"
 pyo3 = { version = "0.18", features = ["extension-module"] }
 round = "0.1.2"
