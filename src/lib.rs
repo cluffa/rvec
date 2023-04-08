@@ -1,7 +1,11 @@
 use pyo3::prelude::*;
 
-mod rvecdata;
-use rvecdata::{RVecData, from_py, BaseRVecData, VecStringMethods};
+mod vec_data;
+mod string_methods;
+mod vec_operations;
+
+use vec_data::{RVecData, from_py, BaseRVecData};
+use string_methods::VecStringMethods;
 
 #[pyclass]
 #[derive(Clone, Debug)]
@@ -102,11 +106,11 @@ impl RVec {
     }
     
     pub fn __getitem__(&self, index: &PyAny) -> PyResult<f64> {
-        panic!("Not implemented") // TODO
+        panic!("Not implemented {}", index) // TODO
     }
 
     pub fn __setitem__(&mut self, index: &PyAny, value: &PyAny) -> PyResult<()> {
-        panic!("Not implemented") // TODO
+        panic!("Not implemented {} {}", index, value) // TODO
     }
 
     pub fn str_capitalize(&self) -> PyResult<Self> {
