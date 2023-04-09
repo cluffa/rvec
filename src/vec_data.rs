@@ -1,6 +1,7 @@
 use pyo3::prelude::*;
+const DEFAULT_TO_64: bool = crate::DEFAULT_TO_64;
 
-/// A value that can be stored in a vector
+// A vector of data
 #[derive(Debug, Clone)]
 pub enum RVecData {
     I32(Vec<i32>),
@@ -12,9 +13,13 @@ pub enum RVecData {
 }
 
 pub trait BaseRVecData {
+    /// Returns the length of the vector
     fn len(&self) -> usize;
+    /// Returns true if the vector is a scalar (length == 1)
     fn is_scalar(&self) -> bool;
+    /// Returns the type of the vector (i32, i64, f32, f64, str, bool)
     fn element_type(&self) -> &'static str;
+    /// Converts the vector to a vector of strings
     fn as_str(&self) -> RVecData;
 }
 
@@ -57,32 +62,47 @@ impl BaseRVecData for RVecData {
     }
 }
 
+/// Converts a Python object to RVecData
 pub fn from_py(obj: &PyAny) -> PyResult<RVecData> {
-    if let Ok(_) = obj.extract::<Vec<i32>>() {
-        Ok(RVecData::I32(obj.extract()?))
-    } else if let Ok(_) = obj.extract::<Vec<i64>>() {
-        Ok(RVecData::I64(obj.extract()?))
-    } else if let Ok(_) = obj.extract::<Vec<f32>>() {
-        Ok(RVecData::F32(obj.extract()?))
-    } else if let Ok(_) = obj.extract::<Vec<f64>>() {
-        Ok(RVecData::F64(obj.extract()?))
-    } else if let Ok(_) = obj.extract::<Vec<String>>() {
-        Ok(RVecData::Str(obj.extract()?))
-    } else if let Ok(_) = obj.extract::<Vec<bool>>() {
-        Ok(RVecData::Bool(obj.extract()?))
-    } else if let Ok(_) = obj.extract::<i32>() {
-        Ok(RVecData::I32(vec![obj.extract()?]))
-    } else if let Ok(_) = obj.extract::<i64>() {
-        Ok(RVecData::I64(vec![obj.extract()?]))
-    } else if let Ok(_) = obj.extract::<f32>() {
-        Ok(RVecData::F32(vec![obj.extract()?]))
-    } else if let Ok(_) = obj.extract::<f64>() {
-        Ok(RVecData::F64(vec![obj.extract()?]))
-    } else if let Ok(_) = obj.extract::<String>() {
-        Ok(RVecData::Str(vec![obj.extract()?]))
-    } else if let Ok(_) = obj.extract::<bool>() {
-        Ok(RVecData::Bool(vec![obj.extract()?]))
+    if DEFAULT_TO_64 {
+        if let Ok(_) = obj.extract::<Vec<i64>>() {
+            Ok(RVecData::I64(obj.extract()?))
+        } else if let Ok(_) = obj.extract::<Vec<f64>>() {
+            Ok(RVecData::F64(obj.extract()?))
+        } else if let Ok(_) = obj.extract::<Vec<String>>() {
+            Ok(RVecData::Str(obj.extract()?))
+        } else if let Ok(_) = obj.extract::<Vec<bool>>() {
+            Ok(RVecData::Bool(obj.extract()?))
+        } else if let Ok(_) = obj.extract::<i64>() {
+            Ok(RVecData::I64(vec![obj.extract()?]))
+        } else if let Ok(_) = obj.extract::<f64>() {
+            Ok(RVecData::F64(vec![obj.extract()?]))
+        } else if let Ok(_) = obj.extract::<String>() {
+            Ok(RVecData::Str(vec![obj.extract()?]))
+        } else if let Ok(_) = obj.extract::<bool>() {
+            Ok(RVecData::Bool(vec![obj.extract()?]))
+        } else {
+            Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>("Invalid type"))
+        }
     } else {
-        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>("Invalid type"))
+        if let Ok(_) = obj.extract::<Vec<i32>>() {
+            Ok(RVecData::I32(obj.extract()?))
+        } else if let Ok(_) = obj.extract::<Vec<f32>>() {
+            Ok(RVecData::F32(obj.extract()?))
+        } else if let Ok(_) = obj.extract::<Vec<String>>() {
+            Ok(RVecData::Str(obj.extract()?))
+        } else if let Ok(_) = obj.extract::<Vec<bool>>() {
+            Ok(RVecData::Bool(obj.extract()?))
+        } else if let Ok(_) = obj.extract::<i32>() {
+            Ok(RVecData::I32(vec![obj.extract()?]))
+        } else if let Ok(_) = obj.extract::<f32>() {
+            Ok(RVecData::F32(vec![obj.extract()?]))
+        } else if let Ok(_) = obj.extract::<String>() {
+            Ok(RVecData::Str(vec![obj.extract()?]))
+        } else if let Ok(_) = obj.extract::<bool>() {
+            Ok(RVecData::Bool(vec![obj.extract()?]))
+        } else {
+            Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>("Invalid type"))
+        }
     }
 }

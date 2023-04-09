@@ -4,6 +4,9 @@ mod vec_data;
 mod string_methods;
 mod vec_operations;
 
+/// default percision
+const DEFAULT_TO_64: bool = false;
+
 use vec_data::{RVecData, from_py, BaseRVecData};
 use string_methods::VecStringMethods;
 
