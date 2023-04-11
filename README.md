@@ -1,5 +1,5 @@
 # WIP python library for r-like vectorized operations  
-## This is only a proof of concept and for personal use, I don't indend on supporting this library.
+## This is only a proof of concept and for personal use, I don't intend on supporting this library.
 
 This library is written entirely in rust and compiled to a python module using pyo3.
 
@@ -7,7 +7,7 @@ The main goal of this library is to provide a simple way to perform vectorized o
 
 For now, not all types support full cross-type operations. I will get around to adding support for all types eventually. I will probably create a python wrapper for the classes to take advantage of python's lack of type checking, and combine the classes into a single class.  
 
-## Usage  (may not be up to date)
+## Usage  (outdated)
 ```python
 # The main types
 from rvec import FloatVec, IntVec, BoolVec, StrVec
