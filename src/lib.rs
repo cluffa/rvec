@@ -1,11 +1,14 @@
 use pyo3::prelude::*;
 
 mod vec_data;
-mod string_methods;
 mod vec_operations;
+mod vec_utils;
+
+mod string_methods;
 
 /// default percision
-const DEFAULT_TO_64: bool = false;
+type Fdef = f32;
+type Idef = i32;
 
 use vec_data::{RVecData, from_py, BaseRVecData};
 use string_methods::VecStringMethods;
@@ -26,6 +29,10 @@ impl RVec {
     #[pyo3(text_signature = "($self, /)")]
     pub fn str(&self) -> PyResult<Self> {
         Ok(RVec { data: self.data.as_str() })
+    }
+
+    pub fn to_list(&self) -> PyResult<Vec<PyObject>> {
+        self.data.to_list()
     }
 
     pub fn __repr__(&self) -> PyResult<String> {
@@ -172,5 +179,6 @@ impl RVec {
 #[pymodule]
 fn rvec(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<RVec>()?;
+
     Ok(())
 }
