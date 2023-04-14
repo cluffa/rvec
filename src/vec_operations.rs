@@ -1,4 +1,4 @@
-use std::ops::{Add, Sub, Mul, Div, Neg}; // TODO Rem, Not
+use std::ops::{Add, Sub, Mul, Div, Neg, Rem};
 use crate::{vec_data::{RVecData, BaseRVecData}, Fdef, Idef};
 
 // uses python adding rules. "1" + 1 = "11", "abc" + "def" = "abcdef", bool + bool = int, bool as int
@@ -346,3 +346,36 @@ impl Neg for RVecData {
     }
 }
 
+impl Rem for RVecData {
+    type Output = RVecData;
+
+    fn rem(self, rhs: Self) -> Self::Output {
+        if self.len() == rhs.len() {
+            match (self, rhs) {
+                (RVecData::Int(a), RVecData::Int(b)) => RVecData::Int(a.iter().zip(b.iter()).map(|(x, y)| x % y).collect()),
+                (RVecData::Int(a), RVecData::Float(b)) => RVecData::Float(a.iter().zip(b.iter()).map(|(x, y)| *x as Fdef % *y).collect()),
+                (RVecData::Float(a), RVecData::Int(b)) => RVecData::Float(a.iter().zip(b.iter()).map(|(x, y)| *x % *y as Fdef).collect()),
+                (RVecData::Float(a), RVecData::Float(b)) => RVecData::Float(a.iter().zip(b.iter()).map(|(x, y)| *x % *y).collect()),
+                (a, b) => panic!("unsupported types {:?} and {:?}", a.element_type(), b.element_type()),
+            }
+        } else if rhs.is_scalar() {
+            match (self, rhs) {
+                (RVecData::Int(a), RVecData::Int(b)) => RVecData::Int(a.iter().map(|x| x % b[0]).collect()),
+                (RVecData::Int(a), RVecData::Float(b)) => RVecData::Float(a.iter().map(|x| *x as Fdef % b[0]).collect()),
+                (RVecData::Float(a), RVecData::Int(b)) => RVecData::Float(a.iter().map(|x| *x % b[0] as Fdef).collect()),
+                (RVecData::Float(a), RVecData::Float(b)) => RVecData::Float(a.iter().map(|x| *x % b[0]).collect()),
+                (a, b) => panic!("unsupported types {:?} and {:?}", a.element_type(), b.element_type()),
+            }
+        } else if self.is_scalar() {
+            match (self, rhs) {
+                (RVecData::Int(a), RVecData::Int(b)) => RVecData::Int(b.iter().map(|x| a[0] % x).collect()),
+                (RVecData::Int(a), RVecData::Float(b)) => RVecData::Float(b.iter().map(|x| a[0] as Fdef % *x).collect()),
+                (RVecData::Float(a), RVecData::Int(b)) => RVecData::Float(b.iter().map(|x| a[0] % *x as Fdef).collect()),
+                (RVecData::Float(a), RVecData::Float(b)) => RVecData::Float(b.iter().map(|x| a[0] % *x).collect()),
+                (a, b) => panic!("unsupported types {:?} and {:?}", a.element_type(), b.element_type()),
+            }
+        } else {
+            panic!("mismatched lengths {} and {}", self.len(), rhs.len())
+        }
+    }
+}

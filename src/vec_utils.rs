@@ -7,6 +7,13 @@ pub fn concat_float_int(a: &Vec<Fdef>, b: &Vec<Idef>) -> Vec<Fdef> {
     result
 }
 
+pub fn concat_int_float(a: &Vec<Idef>, b: &Vec<Fdef>) -> Vec<Fdef> {
+    let mut result = Vec::with_capacity(a.len() + b.len());
+    result.extend(a.iter().map(|x| *x as Fdef));
+    result.extend(b.iter().cloned());
+    result
+}
+
 pub fn concat_float_float(a: &Vec<Fdef>, b: &Vec<Fdef>) -> Vec<Fdef> {
     let mut result = Vec::with_capacity(a.len() + b.len());
     result.extend(a.iter().cloned());

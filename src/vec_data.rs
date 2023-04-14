@@ -1,7 +1,5 @@
 use pyo3::prelude::*;
 use crate::{Idef, Fdef};
-use crate::vec_utils;
-use crate::RVec;
 
 // A vector of data
 #[derive(Debug, Clone)]
@@ -92,22 +90,22 @@ impl BaseRVecData for RVecData {
 
 /// Converts a Python object to RVecData
 pub fn from_py(obj: &PyAny) -> PyResult<RVecData> {
-    if let Ok(_) = obj.extract::<Vec<Idef>>() {
+    if let Ok(_) = obj.extract::<Vec<bool>>() {
+        Ok(RVecData::Bool(obj.extract()?))
+    } else if let Ok(_) = obj.extract::<Vec<Idef>>() {
         Ok(RVecData::Int(obj.extract()?))
     } else if let Ok(_) = obj.extract::<Vec<Fdef>>() {
         Ok(RVecData::Float(obj.extract()?))
     } else if let Ok(_) = obj.extract::<Vec<String>>() {
         Ok(RVecData::Str(obj.extract()?))
-    } else if let Ok(_) = obj.extract::<Vec<bool>>() {
-        Ok(RVecData::Bool(obj.extract()?))
+    } else if let Ok(_) = obj.extract::<bool>() {
+        Ok(RVecData::Bool(vec![obj.extract()?]))
     } else if let Ok(_) = obj.extract::<Idef>() {
         Ok(RVecData::Int(vec![obj.extract()?]))
     } else if let Ok(_) = obj.extract::<Fdef>() {
         Ok(RVecData::Float(vec![obj.extract()?]))
     } else if let Ok(_) = obj.extract::<String>() {
         Ok(RVecData::Str(vec![obj.extract()?]))
-    } else if let Ok(_) = obj.extract::<bool>() {
-        Ok(RVecData::Bool(vec![obj.extract()?]))
     } else {
         Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>("Invalid type"))
     }

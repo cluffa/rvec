@@ -2,7 +2,9 @@ use pyo3::prelude::*;
 
 mod vec_data;
 mod vec_operations;
-mod vec_utils;
+mod vec_comparisons;
+mod vec_logic;
+mod vec_index;
 
 mod string_methods;
 
@@ -11,6 +13,9 @@ type Fdef = f32;
 type Idef = i32;
 
 use vec_data::{RVecData, from_py, BaseRVecData};
+use vec_comparisons::ElementCmp;
+use vec_logic::ElementLogic;
+use vec_index::Indexing;
 use string_methods::VecStringMethods;
 
 #[pyclass]
@@ -114,9 +119,100 @@ impl RVec {
     pub fn __neg__(&self) -> PyResult<Self> {
         Ok(RVec { data: -self.data.clone() })
     }
+
+    pub fn __pos__(&self) -> PyResult<Self> {
+        Ok(RVec { data: self.data.clone() })
+    }
+
+    pub fn __abs__(&self) -> PyResult<Self> {
+        panic!("Not implemented") // TODO
+    }
+
+    // TODO: comparisons are not working
+    // they work when calling them directly, but not when using the operators
     
-    pub fn __getitem__(&self, index: &PyAny) -> PyResult<f64> {
-        panic!("Not implemented {}", index) // TODO
+    // pub fn __eq__(&self, other: &PyAny) -> PyResult<Self> {
+    //     if let Ok(other) = other.extract::<RVec>() {
+    //         Ok(RVec { data: self.data.eq_ew(&other.data) })
+    //     } else {
+    //         Ok(RVec { data: self.data.eq_ew(&from_py(&other)?) })
+    //     }
+    // }
+
+    // pub fn __ne__(&self, other: &PyAny) -> PyResult<Self> {
+    //     if let Ok(other) = other.extract::<RVec>() {
+    //         Ok(RVec { data: self.data.ne_ew(&other.data) })
+    //     } else {
+    //         Ok(RVec { data: self.data.ne_ew(&from_py(&other)?) })
+    //     }
+    // }
+
+    // pub fn __lt__(&self, other: &PyAny) -> PyResult<Self> {
+    //     if let Ok(other) = other.extract::<RVec>() {
+    //         Ok(RVec { data: self.data.lt_ew(&other.data) })
+    //     } else {
+    //         Ok(RVec { data: self.data.lt_ew(&from_py(&other)?) })
+    //     }
+    // }
+
+    // pub fn __le__(&self, other: &PyAny) -> PyResult<Self> {
+    //     if let Ok(other) = other.extract::<RVec>() {
+    //         Ok(RVec { data: self.data.le_ew(&other.data) })
+    //     } else {
+    //         Ok(RVec { data: self.data.le_ew(&from_py(&other)?) })
+    //     }
+    // }
+
+    // pub fn __gt__(&self, other: &PyAny) -> PyResult<Self> {
+    //     if let Ok(other) = other.extract::<RVec>() {
+    //         Ok(RVec { data: self.data.gt_ew(&other.data) })
+    //     } else {
+    //         Ok(RVec { data: self.data.gt_ew(&from_py(&other)?) })
+    //     }
+    // }
+
+    // pub fn __ge__(&self, other: &PyAny) -> PyResult<Self> {
+    //     if let Ok(other) = other.extract::<RVec>() {
+    //         Ok(RVec { data: self.data.ge_ew(&other.data) })
+    //     } else {
+    //         Ok(RVec { data: self.data.ge_ew(&from_py(&other)?) })
+    //     }
+    // }
+
+    pub fn __and__(&self, other: &PyAny) -> PyResult<Self> {
+        if let Ok(other) = other.extract::<RVec>() {
+            Ok(RVec { data: self.data.and_ew(&other.data) })
+        } else {
+            Ok(RVec { data: self.data.and_ew(&from_py(&other)?) })
+        }
+    }
+
+    pub fn __or__(&self, other: &PyAny) -> PyResult<Self> {
+        if let Ok(other) = other.extract::<RVec>() {
+            Ok(RVec { data: self.data.or_ew(&other.data) })
+        } else {
+            Ok(RVec { data: self.data.or_ew(&from_py(&other)?) })
+        }
+    }
+
+    pub fn __xor__(&self, other: &PyAny) -> PyResult<Self> {
+        if let Ok(other) = other.extract::<RVec>() {
+            Ok(RVec { data: self.data.xor_ew(&other.data) })
+        } else {
+            Ok(RVec { data: self.data.xor_ew(&from_py(&other)?) })
+        }
+    }
+
+    pub fn __invert__(&self) -> PyResult<Self> {
+        Ok(RVec { data: self.data.not_ew() })
+    }
+
+    pub fn __getitem__(&self, index: &PyAny) -> PyResult<Self> {
+        if let Ok(index) = index.extract::<RVec>() {
+            Ok(RVec { data: self.data.getindex(index.data) })
+        } else {
+            Ok(RVec { data: self.data.getindex(from_py(&index)?) })
+        }
     }
 
     pub fn __setitem__(&mut self, index: &PyAny, value: &PyAny) -> PyResult<()> {
